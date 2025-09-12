@@ -2,7 +2,7 @@
 % Please edit documentation in R/export_record.R
 \name{export_record}
 \alias{export_record}
-\title{FUNCTION_TITLE}
+\title{export_record}
 \usage{
 export_record(
   study,
@@ -21,41 +21,40 @@ export_record(
 \arguments{
 \item{study}{A study acronym or name to select the token from a user's R environment (stored as STUDY_TOKEN)}
 
-\item{records}{PARAM_DESCRIPTION, Default: NULL}
+\item{records}{An array of record names specifying specific records you wish to pull (by default, all records are pulled), Default: NULL}
 
-\item{forms}{PARAM_DESCRIPTION, Default: NULL}
+\item{forms}{An array of form names you wish to pull records for. If the form name has a space in it, replace the space with an underscore
+(by default, all records are pulled), Default: NULL}
 
-\item{fields}{PARAM_DESCRIPTION, Default: NULL}
+\item{fields}{An array of field names specifying specific fields you wish to pull (by default, all fields are pulled) or
+alternatively as a string (comma-separated list), Default: NULL}
 
-\item{events}{PARAM_DESCRIPTION, Default: NULL}
+\item{events}{An array of unique event names that you wish to pull records for - only for longitudinal projects, Default: NULL}
 
-\item{format}{PARAM_DESCRIPTION, Default: c("csv", "json")}
+\item{format}{The file type to retrieve from REDCap (choices include csv or json), Default: csv}
 
-\item{rawOrLabel}{PARAM_DESCRIPTION, Default: c("raw", "label")}
+\item{rawOrLabel}{Export the raw coded values or labels for the options of multiple choice fields, Default: raw}
 
-\item{rawOrLabelHeaders}{PARAM_DESCRIPTION, Default: c("raw", "label")}
+\item{rawOrLabelHeaders}{Export the variable or field names (raw) or the field labels (label). Labels can only
+be exported if format is csv, Default: raw}
 
-\item{exportCheckboxLabel}{PARAM_DESCRIPTION, Default: 'false'}
+\item{exportCheckboxLabel}{Specifies the format of checkbox when exporting the data as labels (i.e., when
+rawOrLabel = "label"). Setting exportCheckboxLabel to "true" will add the checkbox value instead of using
+'Checked' or 'Unchecked'.}
 
-\item{type}{PARAM_DESCRIPTION, Default: c("flat", "eav")}
+\item{type}{Output is one record per row (flat) or one data point per row (eav), Default: flat}
 
-\item{...}{PARAM_DESCRIPTION}
+\item{...}{Optional parameters that can be passed to the REDCap API when exporting records. These may include exportSurveyFields,
+exportDataAccessGroups, filterLogic, dateRangeBegin, and dateRangeEnd. See REDCap API documentation for full details.}
 }
 \value{
-OUTPUT_DESCRIPTION
+A data frame containing the extracted record
 }
 \description{
-FUNCTION_DESCRIPTION
+Retrieves a record from the REDCap API
 }
 \details{
-DETAILS
-}
-\examples{
-\dontrun{
-if(interactive()){
- #EXAMPLE1
- }
-}
+Retrieves a record from the REDCap API
 }
 \seealso{
 \code{\link[httr2]{request}}, \code{\link[httr2]{req_body}}, \code{\link[httr2]{req_perform}}

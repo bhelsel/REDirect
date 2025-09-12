@@ -23,7 +23,7 @@ only json is implemented at this time., Default: "json"}
 
 \item{data}{A vector or data frame containing data to upload to REDCap, Default: NULL}
 
-\item{...}{Individual variables from the REDCap data base to be uploaded in the format of variable = "value".
+\item{...}{Individual variables from the REDCap database to be uploaded in the format of variable = "value".
 A user can pass as many variables as needed to ..., but they are only used if data is NULL}
 }
 \value{
@@ -36,5 +36,6 @@ Imports a record to REDCap through the API
 Imports a record to REDCap through the API
 }
 \seealso{
+\code{\link[jsonlite]{toJSON, fromJSON}}, \code{\link[jsonlite]{prettify, minify}}
 \code{\link[httr2]{request}}, \code{\link[httr2]{req_body}}, \code{\link[httr2]{req_perform}}
 }

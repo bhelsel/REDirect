@@ -1,24 +1,24 @@
-#' @title FUNCTION_TITLE
-#' @description FUNCTION_DESCRIPTION
+#' @title export_record
+#' @description Retrieves a record from the REDCap API
 #' @param study A study acronym or name to select the token from a user's R environment (stored as STUDY_TOKEN)
-#' @param records PARAM_DESCRIPTION, Default: NULL
-#' @param forms PARAM_DESCRIPTION, Default: NULL
-#' @param fields PARAM_DESCRIPTION, Default: NULL
-#' @param events PARAM_DESCRIPTION, Default: NULL
-#' @param format PARAM_DESCRIPTION, Default: c("csv", "json")
-#' @param rawOrLabel PARAM_DESCRIPTION, Default: c("raw", "label")
-#' @param rawOrLabelHeaders PARAM_DESCRIPTION, Default: c("raw", "label")
-#' @param exportCheckboxLabel PARAM_DESCRIPTION, Default: 'false'
-#' @param type PARAM_DESCRIPTION, Default: c("flat", "eav")
-#' @param ... PARAM_DESCRIPTION
-#' @return OUTPUT_DESCRIPTION
-#' @details DETAILS
-#' @examples
-#' \dontrun{
-#' if(interactive()){
-#'  #EXAMPLE1
-#'  }
-#' }
+#' @param records An array of record names specifying specific records you wish to pull (by default, all records are pulled), Default: NULL
+#' @param forms An array of form names you wish to pull records for. If the form name has a space in it, replace the space with an underscore
+#'   (by default, all records are pulled), Default: NULL
+#' @param fields An array of field names specifying specific fields you wish to pull (by default, all fields are pulled) or
+#'   alternatively as a string (comma-separated list), Default: NULL
+#' @param events An array of unique event names that you wish to pull records for - only for longitudinal projects, Default: NULL
+#' @param format The file type to retrieve from REDCap (choices include csv or json), Default: csv
+#' @param rawOrLabel Export the raw coded values or labels for the options of multiple choice fields, Default: raw
+#' @param rawOrLabelHeaders Export the variable or field names (raw) or the field labels (label). Labels can only
+#'   be exported if format is csv, Default: raw
+#' @param exportCheckboxLabel Specifies the format of checkbox when exporting the data as labels (i.e., when
+#'   rawOrLabel = "label"). Setting exportCheckboxLabel to "true" will add the checkbox value instead of using
+#'   'Checked' or 'Unchecked'.
+#' @param type Output is one record per row (flat) or one data point per row (eav), Default: flat
+#' @param ... Optional parameters that can be passed to the REDCap API when exporting records. These may include exportSurveyFields,
+#'   exportDataAccessGroups, filterLogic, dateRangeBegin, and dateRangeEnd. See REDCap API documentation for full details.
+#' @return A data frame containing the extracted record
+#' @details Retrieves a record from the REDCap API
 #' @seealso
 #'  \code{\link[httr2]{request}}, \code{\link[httr2]{req_body}}, \code{\link[httr2]{req_perform}}
 #' @rdname export_record

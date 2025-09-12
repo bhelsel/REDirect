@@ -6,14 +6,16 @@
 #'   only json is implemented at this time., Default: "json"
 #' @param type Output is one record per row (flat) or one data point per row (eav), Default: flat
 #' @param data A vector or data frame containing data to upload to REDCap, Default: NULL
-#' @param ... Individual variables from the REDCap data base to be uploaded in the format of variable = "value".
+#' @param ... Individual variables from the REDCap database to be uploaded in the format of variable = "value".
 #'   A user can pass as many variables as needed to ..., but they are only used if data is NULL
 #' @return The status of the request
 #' @details Imports a record to REDCap through the API
 #' @seealso
+#'  \code{\link[jsonlite]{toJSON, fromJSON}}, \code{\link[jsonlite]{prettify, minify}}
 #'  \code{\link[httr2]{request}}, \code{\link[httr2]{req_body}}, \code{\link[httr2]{req_perform}}
 #' @rdname import_record
 #' @export
+#' @importFrom jsonlite toJSON fromJSON prettify
 #' @importFrom httr2 request req_body_form req_perform
 
 import_record <- function(
@@ -33,6 +35,19 @@ import_record <- function(
     data <- jsonlite::toJSON(list(as.list(data)), auto_unbox = TRUE)
   } else if (is.data.frame(data)) {
     data <- jsonlite::toJSON(data)
+  }
+
+  duplicates <- check_record(study, data = jsonlite::fromJSON(data))
+  if (nrow(duplicates) > 0) {
+    stop(
+      paste0(
+        "\n \U1F6AB Import blocked: The following instances already exist in REDCap.\n",
+        "Uploading them would create override the existing fields.\n\n",
+        jsonlite::prettify(jsonlite::toJSON(duplicates, pretty = TRUE)),
+        "\n\n \U1F449 Please remove or update these rows before using the import_record function."
+      ),
+      call. = FALSE
+    )
   }
 
   request <- httr2::request(auth$server) |>
