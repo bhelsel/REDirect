@@ -10,7 +10,6 @@ Imports:
   httr2,
   jsonlite,
   purrr,
-  RCurl,
   utils
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

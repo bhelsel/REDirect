@@ -2,24 +2,26 @@
 % Please edit documentation in R/check_record.R
 \name{check_record}
 \alias{check_record}
-\title{FUNCTION_TITLE}
+\title{check_record}
 \usage{
 check_record(study, data)
 }
 \arguments{
-\item{study}{PARAM_DESCRIPTION}
+\item{study}{The study name or abbreviation that matches the API token stored in a user's R environment.
+The token should be stored as the study name or abbreviation followed by _TOKEN.}
 
-\item{data}{PARAM_DESCRIPTION}
+\item{data}{A data frame containing the data to upload to REDCap}
 }
 \value{
-OUTPUT_DESCRIPTION
+A data frame of any duplicates of NULL if no duplicates are found
 }
 \description{
-FUNCTION_DESCRIPTION
+A validation check when importing records to REDCap to ensure no data is being overwritten
 }
 \details{
-DETAILS
+A validation check when importing records to REDCap to ensure no data is being overwritten
 }
 \seealso{
 \code{\link[dplyr]{rename}}, \code{\link[dplyr]{distinct}}, \code{\link[dplyr]{across}}, \code{\link[dplyr]{reexports}}, \code{\link[dplyr]{mutate-joins}}, \code{\link[dplyr]{select}}
 }
+\keyword{internal}

@@ -39,6 +39,5 @@ Retrieves a report from the REDCap API
 Retrieves a report from the REDCap API
 }
 \seealso{
-\code{\link[RCurl]{postForm}}
-\code{\link[jsonlite]{toJSON, fromJSON}}
+\code{\link[httr2]{request}}, \code{\link[httr2]{req_body}}, \code{\link[httr2]{req_perform}}
 }

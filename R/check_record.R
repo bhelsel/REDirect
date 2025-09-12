@@ -1,14 +1,15 @@
-#' @title FUNCTION_TITLE
-#' @description FUNCTION_DESCRIPTION
-#' @param study PARAM_DESCRIPTION
-#' @param data PARAM_DESCRIPTION
-#' @return OUTPUT_DESCRIPTION
-#' @details DETAILS
+#' @title check_record
+#' @description A validation check when importing records to REDCap to ensure no data is being overwritten
+#' @param study The study name or abbreviation that matches the API token stored in a user's R environment.
+#'   The token should be stored as the study name or abbreviation followed by _TOKEN.
+#' @param data A data frame containing the data to upload to REDCap
+#' @return A data frame of any duplicates of NULL if no duplicates are found
+#' @details A validation check when importing records to REDCap to ensure no data is being overwritten
 #' @seealso
 #'  \code{\link[dplyr]{rename}}, \code{\link[dplyr]{distinct}}, \code{\link[dplyr]{across}}, \code{\link[dplyr]{reexports}}, \code{\link[dplyr]{mutate-joins}}, \code{\link[dplyr]{select}}
 #' @rdname check_record
-#' @export
 #' @importFrom dplyr rename distinct across all_of inner_join select any_of %>%
+#' @keywords internal
 
 check_record <- function(study, data) {
   cols2check <- c(

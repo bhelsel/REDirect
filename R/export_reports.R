@@ -12,12 +12,10 @@
 #' @return A data frame containing the extracted report
 #' @details Retrieves a report from the REDCap API
 #' @seealso
-#'  \code{\link[RCurl]{postForm}}
-#'  \code{\link[jsonlite]{toJSON, fromJSON}}
+#'  \code{\link[httr2]{request}}, \code{\link[httr2]{req_body}}, \code{\link[httr2]{req_perform}}
 #' @rdname export_reports
 #' @export
-#' @importFrom RCurl postForm
-#' @importFrom jsonlite fromJSON
+#' @importFrom httr2 request req_body_form req_perform
 
 export_reports <- function(
   study,
