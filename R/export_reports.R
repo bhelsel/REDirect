@@ -29,7 +29,7 @@ export_reports <- function(
   rawOrLabel = match.arg(rawOrLabel)
   rawOrLabelHeaders = match.arg(rawOrLabelHeaders)
   auth <- get_token(study)
-  request <- httr2::request(auth$server) |>
+  request <- httr2::request(auth$server) %>%
     httr2::req_body_form(
       token = auth$token,
       content = "report",
@@ -38,7 +38,7 @@ export_reports <- function(
       rawOrLabel = rawOrLabel,
       rawOrLabelHeaders = rawOrLabelHeaders,
       exportCheckboxLabel = exportCheckboxLabel
-    ) |>
+    ) %>%
     httr2::req_perform()
 
   class(request) <- c("httr2_response", paste0("redcap_", format))

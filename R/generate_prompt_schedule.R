@@ -12,6 +12,7 @@
 #' @param time_blocks The 24-hour time blocks for controlling when the prompts are sent. Time blocking is used
 #'   to ensure the prompts are delivered sequentially throughout the day, but a random time will be generated
 #'   within each of the time blocks. The time_blocks argument should be a length one more than n_days, Default: c(8, 11, 14, 18, 22)
+#' @param add_prompt_time Add a random prompt time variable to the data set within the time_blocks, Default: TRUE
 #' @param random_surveys A selection of surveys to deliver randomly. This generates a controller variable that delivers different
 #'   combinations of the surveys ranging from none to all that are sampled at random_survey_probability, Default: NULL
 #' @param random_survey_probability A random sampling probability used to generate the controller to designate a random
@@ -19,6 +20,9 @@
 #'   length of random_surveys, Default: 0.5
 #' @param event_names The name of the events to inclue in the data set that coincide with each sampling period. If provided, event_names
 #'   should be the same length as the n_days argument and map onto redcap_event_name., Default: NULL
+#' @param ... Optional arguments for a secondary controller in the form of a named list matching one of the random_surveys. Within the list,
+#'   users can use the c() operator to control the sampling strategy in that one value within c() will be picked each time random_surveys
+#'   are sampled.
 #' @return A data frame that can be passed to import_record to set up the prompting schedule.
 #' @details Generates a prompt schedule for an EMA study that can be hosted on REDCap
 #' @seealso
@@ -35,9 +39,11 @@ generate_prompt_schedule <- function(
   break_length = c(),
   prompts_per_day = 4,
   time_blocks = c(8, 11, 14, 18, 22),
+  add_prompt_time = TRUE,
   random_surveys = NULL,
   random_survey_probability = 0.5,
-  event_names = NULL
+  event_names = NULL,
+  ...
 ) {
   # Active day offsets and labels
   stopifnot(length(break_length) == length(n_days) - 1)
@@ -86,18 +92,30 @@ generate_prompt_schedule <- function(
 
   data$days <- data$days + 1
 
-  # Assign random time within block
-  stopifnot(length(time_blocks) == max(prompts_per_day) + 1)
-  data$prompt_time <-
-    purrr::map_chr(data$prompt, function(x) {
-      sprintf(
-        "%02d:%02d",
-        sample(time_blocks[x]:(time_blocks[x + 1] - 1), 1), # Hour
-        sample(0:59, 1) # Minute
-      )
-    })
+  order <- c(
+    "record_id",
+    "redcap_repeat_instrument",
+    "redcap_event_name",
+    "redcap_repeat_instance",
+    "days",
+    "prompts"
+  )
 
-  data$prompt_time <- paste(data$date, data$prompt_time)
+  # Assign random time within block
+  if (add_prompt_time) {
+    stopifnot(length(time_blocks) == max(prompts_per_day) + 1)
+    data$prompt_time <-
+      purrr::map_chr(data$prompt, function(x) {
+        sprintf(
+          "%02d:%02d",
+          sample(time_blocks[x]:(time_blocks[x + 1] - 1), 1), # Hour
+          sample(0:59, 1) # Minute
+        )
+      })
+
+    data$prompt_time <- paste(data$date, data$prompt_time)
+    order <- c(order, "prompt_time")
+  }
 
   data$date <- NULL
 
@@ -111,22 +129,32 @@ generate_prompt_schedule <- function(
       random_surveys,
       probs = random_survey_probability
     )
+    order <- c(order, "controller")
+    secondary_features = list(...)
+    if (length(secondary_features) > 0) {
+      secondary_feature_names = names(secondary_features)
+      if (secondary_feature_names %in% random_surveys) {
+        secondary_controller <- add_secondary_controller(
+          data$controller,
+          name = secondary_feature_names,
+          secondary_features
+        )
+        data <- cbind(data, secondary_controller)
+        order <- c(order, names(secondary_controller))
+      }
+    }
   }
 
-  order <- c(
-    "record_id",
-    "redcap_repeat_instrument",
-    "redcap_event_name",
-    "redcap_repeat_instance",
-    "days",
-    "prompts",
-    "controller",
-    "prompt_time"
-  )
-
-  order <- order[order %in% names(data)]
-
   data <- data[, order]
+
+  data$identifier <- sprintf(
+    "record=%s&event=%s&instance=%s&days=%s&prompts=%s",
+    data$record_id,
+    data$redcap_event_name,
+    data$redcap_repeat_instance,
+    data$days,
+    data$prompts
+  )
 
   return(data)
 }

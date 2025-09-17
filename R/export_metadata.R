@@ -22,14 +22,14 @@ export_metadata <- function(
   format <- match.arg(format)
   auth <- get_token(study)
 
-  request <- httr2::request(auth$server) |>
+  request <- httr2::request(auth$server) %>%
     httr2::req_body_form(
       token = auth$token,
       content = "metadata",
       format = format,
       !!!get_array(fields, "fields"),
       !!!get_array(forms, "forms")
-    ) |>
+    ) %>%
     httr2::req_perform()
 
   class(request) <- c("httr2_response", paste0("redcap_", format))

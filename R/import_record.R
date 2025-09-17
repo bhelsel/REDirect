@@ -38,26 +38,28 @@ import_record <- function(
   }
 
   duplicates <- check_record(study, data = jsonlite::fromJSON(data))
-  if (nrow(duplicates) > 0) {
-    stop(
-      paste0(
-        "\n \U1F6AB Import blocked: The following instances already exist in REDCap.\n",
-        "Uploading them would create override the existing fields.\n\n",
-        jsonlite::prettify(jsonlite::toJSON(duplicates, pretty = TRUE)),
-        "\n\n \U1F449 Please remove or update these rows before using the import_record function."
-      ),
-      call. = FALSE
-    )
+  if (!is.null(duplicates)) {
+    if (nrow(duplicates) > 0) {
+      stop(
+        paste0(
+          "\n \U1F6AB Import blocked: The following instances already exist in REDCap.\n",
+          "Uploading them would create override the existing fields.\n\n",
+          jsonlite::prettify(jsonlite::toJSON(duplicates, pretty = TRUE)),
+          "\n\n \U1F449 Please remove or update these rows before using the import_record function."
+        ),
+        call. = FALSE
+      )
+    }
   }
 
-  request <- httr2::request(auth$server) |>
+  request <- httr2::request(auth$server) %>%
     httr2::req_body_form(
       token = auth$token,
       content = "record",
       format = format,
       type = type,
       data = data
-    ) |>
+    ) %>%
     httr2::req_perform()
 
   return(request)

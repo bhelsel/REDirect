@@ -15,6 +15,7 @@ get_array <- function(x, type = c("fields", "forms", "records", "events")) {
   }
 }
 
+
 #' @keywords internal
 sample_controllers <- function(n, features, probs = 0.5) {
   if (length(probs) != length(features)) {
@@ -38,4 +39,18 @@ sample_controllers <- function(n, features, probs = 0.5) {
   attr(codes, "labels") <- labels
 
   return(codes)
+}
+
+add_secondary_controller <- function(controller, name, secondary_features) {
+  indx <- grep(name, attr(controller, "label"))
+  ncols <- length(unlist(secondary_features))
+  features <- unlist(secondary_features)
+  data <- data.frame(matrix(data = 0, ncol = ncols, nrow = length(controller)))
+  names(data) <- features
+  for (i in indx) {
+    rsamp <- purrr::map_chr(secondary_features[[1]], ~ sample(.x, size = 1))
+    data[i, rsamp] <- 1
+  }
+  names(data) <- paste0("secondary_controller___", 1:length(features))
+  return(data)
 }

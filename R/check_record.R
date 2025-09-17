@@ -19,22 +19,42 @@ check_record <- function(study, data) {
     "redcap_repeat_instance"
   )
   exportEAV <- ifelse("redcap_repeat_instrument" %in% names(data), TRUE, FALSE)
-  record <- export_record(
-    study = study,
-    records = unique(data$record_id),
-    forms = unique(data$redcap_repeat_instrument),
-    format = "csv",
-    type = ifelse(exportEAV, "eav", "flat")
+
+  record <- tryCatch(
+    {
+      export_record(
+        study = study,
+        records = unique(data$record_id),
+        forms = unique(data$redcap_repeat_instrument),
+        format = "csv",
+        type = ifelse(exportEAV, "eav", "flat")
+      )
+    },
+    error = function(e) {
+      return(NULL)
+    }
   )
+
+  if (is.null(record)) {
+    return(NULL)
+  }
 
   matV <- names(data)[which(cols2check %in% names(data))]
   addV <- names(data)[-which(cols2check %in% names(data))]
 
   if (exportEAV) {
-    duplicates <- record %>%
-      dplyr::rename(record_id = record) %>%
-      dplyr::distinct(dplyr::across(dplyr::all_of(cols2check))) %>%
-      dplyr::inner_join(data[, matV], by = matV)
+    if (!all(data$redcap_repeat_instance == "new")) {
+      data <- data[!is.character(data$redcap_repeat_instance), ]
+      if (nrow(data) > 0) {
+        data$redcap_repeat_instance <- as.numeric(data$redcap_repeat_instance)
+        duplicates <- record %>%
+          dplyr::rename(record_id = record) %>%
+          dplyr::distinct(dplyr::across(dplyr::all_of(cols2check))) %>%
+          dplyr::inner_join(data[, matV], by = matV)
+      }
+    } else {
+      duplicates <- data.frame()
+    }
   } else {
     duplicates <- dplyr::inner_join(
       dplyr::select(data, dplyr::any_of(matV), addV),

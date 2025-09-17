@@ -43,7 +43,7 @@ export_record <- function(
   rawOrLabelHeaders = match.arg(rawOrLabelHeaders)
   type = match.arg(type)
   auth <- get_token(study)
-  request <- httr2::request(auth$server) |>
+  request <- httr2::request(auth$server) %>%
     httr2::req_body_form(
       token = auth$token,
       content = "record",
@@ -57,7 +57,7 @@ export_record <- function(
       exportCheckboxLabel = exportCheckboxLabel,
       type = type,
       ...
-    ) |>
+    ) %>%
     httr2::req_perform()
 
   class(request) <- c("httr2_response", paste0("redcap_", format))
