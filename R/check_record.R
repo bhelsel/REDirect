@@ -35,7 +35,10 @@ check_record <- function(study, data) {
     }
   )
 
-  if (is.null(record)) {
+  missing_event_name <- !unique(record$redcap_event_name) %in%
+    unique(data$redcap_event_name)
+
+  if (is.null(record) | missing_event_name) {
     return(NULL)
   }
 
@@ -59,12 +62,14 @@ check_record <- function(study, data) {
     duplicates <- dplyr::inner_join(
       dplyr::select(data, dplyr::any_of(matV), addV),
       dplyr::select(record, dplyr::any_of(matV), addV),
-      by = c(matV, addV)
+      by = matV
     )
+    colnames(duplicates) <- gsub(".x$", "_input", colnames(duplicates))
+    colnames(duplicates) <- gsub(".y$", "_redcap", colnames(duplicates))
   }
 
   if (nrow(duplicates) > 0) {
-    return(duplicates)
+    return(tidyr::drop_na(duplicates))
   } else {
     return(NULL)
   }
