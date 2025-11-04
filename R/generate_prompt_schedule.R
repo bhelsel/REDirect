@@ -38,11 +38,12 @@ generate_prompt_schedule <- function(
   n_days = 7,
   break_length = c(),
   prompts_per_day = 4,
-  time_blocks = c(8, 11, 14, 18, 22),
+  time_blocks = c(8, 11, 14, 18, 21),
   add_prompt_time = TRUE,
   random_surveys = NULL,
   random_survey_probability = 0.5,
   event_names = NULL,
+  availability = NULL,
   ...
 ) {
   # Active day offsets and labels
@@ -90,7 +91,7 @@ generate_prompt_schedule <- function(
 
   data$date <- as.Date(enrollment_date) + data$days
 
-  data$days <- data$days + 1
+  data$days <- as.integer(data$days + 1)
 
   order <- c(
     "record_id",
@@ -102,7 +103,68 @@ generate_prompt_schedule <- function(
   )
 
   # Assign random time within block
-  if (add_prompt_time) {
+  if (add_prompt_time & !is.null(availability)) {
+    stopifnot(length(time_blocks) == max(prompts_per_day) + 1)
+
+    # Parse availability data once for this participant
+    availability <- parse_availability(availability) # Your single-row data with availability columns
+
+    prompt_times <- rep("", nrow(data))
+
+    for (i in 1:nrow(data)) {
+      prompt_date <- as.Date(data$date[i])
+      day_of_week <- as.integer(format(prompt_date, "%w")) #+ 1 # 1=Monday, 7=Sunday
+      prompt_num <- data$prompt[i]
+      time_block <- time_blocks[prompt_num]:(time_blocks[prompt_num + 1] - 1)
+      # Get available hours for this day
+      avail_hours <- availability[[as.character(day_of_week)]]
+
+      if (is.null(avail_hours) || length(avail_hours) == 0) {
+        # No availability data or all times blocked - fall back to time blocks
+        hour <- sample(time_block, 1)
+      } else if (any(time_block %in% avail_hours)) {
+        if (length(time_block[time_block %in% avail_hours]) > 1) {
+          hour <- sample(time_block[time_block %in% avail_hours], 1)
+        } else {
+          hour <- time_block[time_block %in% avail_hours]
+        }
+      } else {
+        addmtb <- sort(c(avail_hours, median(time_block)))
+        mtbindx <- which(addmtb == median(time_block))
+        diffup <- addmtb[mtbindx + 1] - median(time_block)
+        diffdown <- median(time_block) - addmtb[mtbindx - 1]
+        direction <- ifelse(diffup >= diffdown, "subtract", "add")
+        while (!any(avail_hours %in% time_block)) {
+          if (direction == "subtract") {
+            time_block <- time_block - 1
+          } else if (direction == "add") {
+            time_block <- time_block - 1
+          }
+        }
+        possible_hours <- avail_hours[avail_hours %in% time_block]
+        if (length(possible_hours) > 1) {
+          hour <- sample(possible_hours)
+        } else {
+          hour <- avail_hours[avail_hours %in% time_block]
+        }
+      }
+
+      minute <- sample(0:59, 1)
+      prompt_times[i] <- sprintf("%s %02d:%02d", data$date[i], hour, minute)
+
+      if (i > 1) {
+        if (
+          gsub(":[0-9]{2}$", "", prompt_times[i]) ==
+            gsub(":[0-9]{2}$", "", prompt_times[i - 1])
+        ) {
+          time2sub <- as.POSIXct(prompt_times[i - 1], format = "%Y-%m-%d %H:%M")
+          prompt_times[i - 1] <- format(time2sub - 3600, "%Y-%m-%d %H:%M")
+        }
+      }
+    }
+    data$prompt_time <- prompt_times
+    order <- c(order, "prompt_time")
+  } else if (add_prompt_time & is.null(availability)) {
     stopifnot(length(time_blocks) == max(prompts_per_day) + 1)
     data$prompt_time <-
       purrr::map_chr(data$prompt, function(x) {

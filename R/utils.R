@@ -27,7 +27,7 @@ sample_controllers <- function(n, features, probs = 0.5) {
 
   # Encode as integer (binary to decimal)
   codes <- apply(mat, 1, function(row) {
-    sum(row * 2^(seq_along(row) - 1))
+    as.integer(sum(row * 2^(seq_along(row) - 1)))
   })
 
   # Optional: create labels
@@ -51,6 +51,7 @@ add_secondary_controller <- function(controller, name, secondary_features) {
     rsamp <- purrr::map_chr(secondary_features[[1]], ~ sample(.x, size = 1))
     data[i, rsamp] <- 1
   }
+  data <- purrr::modify(data, as.integer)
   names(data) <- paste0("secondary_controller___", 1:length(features))
   return(data)
 }
