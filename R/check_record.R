@@ -38,7 +38,9 @@ check_record <- function(study, data) {
   missing_event_name <- !unique(record$redcap_event_name) %in%
     unique(data$redcap_event_name)
 
-  if (is.null(record) | missing_event_name) {
+  if (
+    is.null(record) || missing_event_name || rlang::is_empty(missing_event_name)
+  ) {
     return(NULL)
   }
 
