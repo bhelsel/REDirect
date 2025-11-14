@@ -23,6 +23,7 @@ import_record <- function(
   format = "json",
   type = c("flat", "eav"),
   data = NULL,
+  force = FALSE,
   ...
 ) {
   format <- match.arg(format)
@@ -37,7 +38,12 @@ import_record <- function(
     data <- jsonlite::toJSON(data)
   }
 
-  duplicates <- check_record(study, data = jsonlite::fromJSON(data))
+  if (!force) {
+    duplicates <- check_record(study, data = jsonlite::fromJSON(data))
+  } else {
+    duplicates <- NULL
+  }
+
   if (!is.null(duplicates)) {
     if (nrow(duplicates) > 0) {
       stop(
