@@ -9,6 +9,7 @@ import_record(
   format = "json",
   type = c("flat", "eav"),
   data = NULL,
+  force = FALSE,
   ...
 )
 }

@@ -11,11 +11,12 @@ generate_prompt_schedule(
   n_days = 7,
   break_length = c(),
   prompts_per_day = 4,
-  time_blocks = c(8, 11, 14, 18, 22),
+  time_blocks = c(8, 11, 14, 18, 21),
   add_prompt_time = TRUE,
   random_surveys = NULL,
   random_survey_probability = 0.5,
   event_names = NULL,
+  availability = NULL,
   ...
 )
 }
