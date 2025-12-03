@@ -2,3 +2,4 @@
 inst/app/ema/renv
 inst/app/ema/*
 !inst/app/ema/app.R
+inst/scripts
