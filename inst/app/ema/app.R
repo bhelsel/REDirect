@@ -132,7 +132,10 @@ server <- function(input, output, session) {
     df <- REDirect::export_reports("moveid", 98993)
     # Filter out intake events and keep only EMA data
     df <- df |>
-      dplyr::filter(redcap_repeat_instrument == "ema") |>
+      dplyr::filter(
+        redcap_repeat_instrument == "ema" &
+          redcap_event_name != "familiarization_arm_1"
+      ) |>
       dplyr::mutate(
         prompt_time = lubridate::ymd_hm(prompt_time, tz = "America/Chicago"),
         survey_start_time = lubridate::ymd_hm(
@@ -280,6 +283,7 @@ server <- function(input, output, session) {
         ),
         .groups = "drop"
       ) |>
+      dplyr::filter(`Last Response` != -Inf) |>
       dplyr::arrange(dplyr::desc(Completed))
     DT::datatable(
       compliance_summary,
@@ -345,7 +349,7 @@ server <- function(input, output, session) {
       )
     DT::datatable(
       upcoming_display,
-      options = list(pageLength = 15, autoWidth = TRUE),
+      options = list(pageLength = 10, autoWidth = TRUE),
       rownames = FALSE
     ) |>
       DT::formatRound('Hours Until', 1) |>
@@ -461,7 +465,7 @@ server <- function(input, output, session) {
   output$response_history <- DT::renderDT({
     history <- data() |>
       dplyr::filter(record_id == input$participant_detail) |>
-      dplyr::arrange(dplyr::desc(prompt_time)) |>
+      dplyr::arrange(prompt_time) |>
       dplyr::mutate(
         response_delay = as.numeric(
           difftime(
@@ -491,7 +495,7 @@ server <- function(input, output, session) {
 
     DT::datatable(
       history,
-      options = list(pageLength = 20, autoWidth = TRUE),
+      options = list(pageLength = 10, autoWidth = TRUE),
       rownames = FALSE
     ) |>
       DT::formatRound('Delay (min)', 0) |>
