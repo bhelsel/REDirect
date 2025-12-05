@@ -113,7 +113,7 @@ generate_prompt_schedule <- function(
 
     for (i in 1:nrow(data)) {
       prompt_date <- as.Date(data$date[i])
-      day_of_week <- as.integer(format(prompt_date, "%w")) #+ 1 # 1=Monday, 7=Sunday
+      day_of_week <- as.integer(format(prompt_date, "%u")) #+ 1 # 1=Monday, 7=Sunday
       prompt_num <- data$prompt[i]
       time_block <- time_blocks[prompt_num]:(time_blocks[prompt_num + 1] - 1)
       # Get available hours for this day
