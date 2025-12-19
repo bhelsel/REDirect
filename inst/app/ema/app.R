@@ -130,11 +130,17 @@ server <- function(input, output, session) {
   data <- shiny::reactive({
     # Replace this path with your CSV file path
     df <- REDirect::export_reports("moveid", 98993)
+
+    ids <- df |>
+      dplyr::filter(redcap_event_name == "intake_arm_1" & enrollment != 3) |>
+      dplyr::pull(record_id)
+
     # Filter out intake events and keep only EMA data
     df <- df |>
       dplyr::filter(
         redcap_repeat_instrument == "ema" &
-          redcap_event_name != "familiarization_arm_1"
+          redcap_event_name != "familiarization_arm_1" &
+          record_id %in% ids
       ) |>
       dplyr::mutate(
         prompt_time = lubridate::ymd_hm(prompt_time, tz = "America/Chicago"),
