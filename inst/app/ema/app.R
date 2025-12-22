@@ -17,6 +17,12 @@ ui <- shinydashboard::dashboardPage(
         "Participant Details",
         tabName = "details",
         icon = shiny::icon("user")
+      ),
+      shinydashboard::menuItem(
+        "Prompt Scheduler",
+        tabName = "scheduler",
+        icon = shiny::icon("calendar"),
+        selected = TRUE
       )
     )
   ),
@@ -120,6 +126,20 @@ ui <- shinydashboard::dashboardPage(
             DT::DTOutput("response_history")
           )
         )
+      ),
+
+      shinydashboard::tabItem(
+        tabName = "scheduler",
+        shiny::fluidRow(
+          title = "Prompt Scheduler",
+          width = 12,
+          shiny::column(width = 1),
+          shiny::column(
+            width = 11,
+            shiny::h1("Coming Soon!", style = "color: #E05F00"),
+            shiny::h2("An interactive scheduler for EMA prompts")
+          )
+        )
       )
     )
   )
@@ -127,6 +147,11 @@ ui <- shinydashboard::dashboardPage(
 
 server <- function(input, output, session) {
   # Load and process data
+
+  intake <- shiny::reactive({
+    intake <- REDirect::export_reports("moveid", 99023)
+  })
+
   data <- shiny::reactive({
     # Replace this path with your CSV file path
     df <- REDirect::export_reports("moveid", 98993)
