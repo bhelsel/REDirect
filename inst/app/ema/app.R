@@ -21,8 +21,8 @@ ui <- shinydashboard::dashboardPage(
       shinydashboard::menuItem(
         "Prompt Scheduler",
         tabName = "scheduler",
-        icon = shiny::icon("calendar"),
-        selected = TRUE
+        icon = shiny::icon("calendar")
+        # selected = TRUE
       )
     )
   ),
@@ -33,9 +33,10 @@ ui <- shinydashboard::dashboardPage(
       shinydashboard::tabItem(
         tabName = "compliance",
         shiny::fluidRow(
-          shinydashboard::valueBoxOutput("total_participants"),
-          shinydashboard::valueBoxOutput("overall_compliance"),
-          shinydashboard::valueBoxOutput("active_participants")
+          shinydashboard::valueBoxOutput("total_participants", width = 3),
+          shinydashboard::valueBoxOutput("overall_compliance", width = 3),
+          shinydashboard::valueBoxOutput("phase_one_compliance", width = 3),
+          shinydashboard::valueBoxOutput("active_participants", width = 3)
         ),
         shiny::fluidRow(
           shinydashboard::box(
@@ -173,7 +174,8 @@ server <- function(input, output, session) {
           survey_start_time,
           tz = "America/Chicago"
         ),
-        responded = ifelse(!is.na(survey_start_time) & ema_complete == 2, 1, 0),
+        responded_no = rowSums(!is.na(dplyr::across(activity:sport_effort))),
+        responded = ifelse(!is.na(survey_start_time) & responded_no > 0, 1, 0),
         phase = dplyr::case_when(
           grepl("familiarization", redcap_event_name) ~ "Familiarization",
           grepl("burst_1", redcap_event_name) ~ "Burst 1",
@@ -213,23 +215,56 @@ server <- function(input, output, session) {
   compliance <- shiny::reactive({
     comp <- data() |>
       dplyr::filter(prompt_time < Sys.time()) |>
-      dplyr::group_by(record_id) |>
+      dplyr::group_by(record_id, redcap_event_name) |>
       dplyr::summarise(
         rate = mean(responded, na.rm = TRUE) * 100,
         .groups = "drop"
       )
-    mean(comp$rate)
+
+    overall_comp <- comp |>
+      dplyr::group_by(record_id) |>
+      dplyr::summarise(rate = mean(rate))
+
+    list(
+      overall = mean(overall_comp$rate),
+      phase_one = mean(comp[
+        comp$redcap_event_name == "burst_1_arm_1",
+        "rate",
+        drop = TRUE
+      ]),
+      phase_two = mean(comp[
+        comp$redcap_event_name == "burst_2_arm_1",
+        "rate",
+        drop = TRUE
+      ])
+    )
   })
 
   output$overall_compliance <- shinydashboard::renderValueBox({
     shiny::req(compliance())
     shinydashboard::valueBox(
-      paste0(round(compliance(), 1), "%"),
+      paste0(round(compliance()$overall, 1), "%"),
       "Overall Compliance",
       icon = shiny::icon("check-circle"),
-      color = if (compliance() >= 80) {
+      color = if (compliance()$overall >= 80) {
         "green"
-      } else if (compliance() >= 60) {
+      } else if (compliance()$overall >= 60) {
+        "yellow"
+      } else {
+        "red"
+      }
+    )
+  })
+
+  output$phase_one_compliance <- shinydashboard::renderValueBox({
+    shiny::req(compliance())
+    shinydashboard::valueBox(
+      paste0(round(compliance()$phase_one, 1), "%"),
+      "Phase One Compliance",
+      icon = shiny::icon("check-circle"),
+      color = if (compliance()$overall >= 80) {
+        "green"
+      } else if (compliance()$overall >= 60) {
         "yellow"
       } else {
         "red"
@@ -273,7 +308,7 @@ server <- function(input, output, session) {
     ) +
       ggplot2::geom_bar(stat = "identity", position = "dodge") +
       ggplot2::geom_hline(
-        yintercept = compliance(),
+        yintercept = mean(compliance()$overall),
         linetype = "dashed",
         color = "red",
         size = 1
